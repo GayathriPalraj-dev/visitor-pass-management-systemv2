@@ -4,6 +4,8 @@ import { ProtectedRoute } from './routes/ProtectedRoute.jsx'
 import { LoginPage } from './pages/auth/LoginPage.jsx'
 import { DashboardPage } from './pages/dashboard/DashboardPage.jsx'
 import { VisitorsPage } from './pages/visitors/VisitorsPage.jsx'
+import { EmployeeApprovalsPage } from './pages/approvals/EmployeeApprovalsPage.jsx'
+import { ReceptionistPage } from './pages/receptionist/ReceptionistPage.jsx'
 
 function App() {
   return (
@@ -16,6 +18,12 @@ function App() {
       </ProtectedRoute>
       <ProtectedRoute path="/visitors">
         <VisitorsPage />
+      </ProtectedRoute>
+      <ProtectedRoute path="/approvals">
+        <EmployeeApprovalsPage />
+      </ProtectedRoute>
+      <ProtectedRoute path="/receptionist">
+        <ReceptionistPage />
       </ProtectedRoute>
       <Redirect to="/dashboard" />
     </Switch>

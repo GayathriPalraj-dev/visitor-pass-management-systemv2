@@ -40,6 +40,12 @@ const employeeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
   },
   { timestamps: true },
 )

@@ -51,8 +51,17 @@ const seedUsers = async () => {
     await connectDb()
     await User.deleteMany({})
     await Employee.deleteMany({})
-    await User.create(users)
-    await Employee.create(employees)
+    const createdUsers = await User.create(users)
+
+    const employeeUser = createdUsers.find((user) => user.role === 'EMPLOYEE')
+
+    const employeeList = employees.map((employee) =>
+      employee.employeeId === 'EMP-1002' && employeeUser
+        ? { ...employee, user: employeeUser._id }
+        : employee,
+    )
+
+    await Employee.create(employeeList)
 
     console.log('Seed users created:')
     users.forEach((user) => console.log(`${user.role}: ${user.email} / ${user.password}`))

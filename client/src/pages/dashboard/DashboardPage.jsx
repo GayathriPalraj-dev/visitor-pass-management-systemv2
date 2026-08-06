@@ -21,6 +21,16 @@ export const DashboardPage = () => {
           <Link className="secondary-button" to="/visitors">
             Manage Visitors
           </Link>
+          {user?.role === 'EMPLOYEE' && (
+            <Link className="secondary-button" to="/approvals">
+              Approvals
+            </Link>
+          )}
+          {(user?.role === 'RECEPTIONIST' || user?.role === 'ADMIN') && (
+            <Link className="secondary-button" to="/receptionist">
+              Reception Desk
+            </Link>
+          )}
           <button className="secondary-button" type="button" onClick={logout}>
             Logout
           </button>
