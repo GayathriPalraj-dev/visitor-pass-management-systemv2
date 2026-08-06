@@ -5,6 +5,17 @@
   padding: 24px;
 }
 
+.card,
+.panel,
+.modal-card,
+.state-card,
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
 .login-panel {
   width: min(100%, 430px);
   display: grid;
@@ -155,19 +166,217 @@ input:focus {
   font-weight: 900;
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.panel {
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filters input,
+.filters select,
+select,
+textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: var(--text-strong);
+  background: #fff;
+}
+
+.filters input {
+  flex: 1 1 240px;
+}
+
+.filters select {
+  flex: 0 0 180px;
+}
+
+.state-card {
+  padding: 24px;
+  color: var(--text);
+}
+
+.error-state {
+  color: var(--danger);
+}
+
+.primary-button {
+  height: 44px;
+  border-radius: 6px;
+  padding: 0 16px;
+  color: #fff;
+  background: var(--accent);
+  font-weight: 800;
+}
+
+.primary-button:hover {
+  background: var(--accent-dark);
+}
+
+.link-button {
+  background: transparent;
+  color: var(--accent);
+  padding: 0;
+  font-weight: 700;
+}
+
+.link-button.danger {
+  color: var(--danger);
+}
+
+.action-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--accent-dark);
+}
+
+.status-pill.cancelled {
+  background: rgba(185, 28, 28, 0.12);
+  color: var(--danger);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal-card {
+  width: min(720px, 100%);
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.compact-card {
+  width: min(420px, 100%);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.form-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.detail-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.detail-label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.strong-cell {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.muted-text {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.danger-button {
+  height: 44px;
+  border-radius: 6px;
+  padding: 0 16px;
+  color: #fff;
+  background: var(--danger);
+  font-weight: 800;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 12px;
+}
+
 @media (max-width: 640px) {
   .auth-page {
     padding: 16px;
   }
 
   .login-panel,
-  .welcome-card {
+  .welcome-card,
+  .panel,
+  .modal-card {
     padding: 20px;
   }
 
   .topbar,
-  .welcome-card {
+  .welcome-card,
+  .modal-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .form-row,
+  .detail-grid {
+    grid-template-columns: 1fr;
   }
 }

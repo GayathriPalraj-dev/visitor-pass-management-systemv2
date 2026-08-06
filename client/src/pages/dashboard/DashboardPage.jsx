@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 
 const roleLabels = {
@@ -16,9 +17,14 @@ export const DashboardPage = () => {
           <p className="eyebrow">Visitor Pass Management</p>
           <h1>{roleLabels[user?.role] || 'Dashboard'}</h1>
         </div>
-        <button className="secondary-button" type="button" onClick={logout}>
-          Logout
-        </button>
+        <div className="topbar-actions">
+          <Link className="secondary-button" to="/visitors">
+            Manage Visitors
+          </Link>
+          <button className="secondary-button" type="button" onClick={logout}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <section className="welcome-card">

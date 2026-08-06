@@ -3,6 +3,7 @@ import './App.css'
 import { ProtectedRoute } from './routes/ProtectedRoute.jsx'
 import { LoginPage } from './pages/auth/LoginPage.jsx'
 import { DashboardPage } from './pages/dashboard/DashboardPage.jsx'
+import { VisitorsPage } from './pages/visitors/VisitorsPage.jsx'
 
 function App() {
   return (
@@ -12,6 +13,9 @@ function App() {
       </Route>
       <ProtectedRoute path="/dashboard">
         <DashboardPage />
+      </ProtectedRoute>
+      <ProtectedRoute path="/visitors">
+        <VisitorsPage />
       </ProtectedRoute>
       <Redirect to="/dashboard" />
     </Switch>
