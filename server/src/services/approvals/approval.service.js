@@ -6,21 +6,22 @@ import { AppError } from '../../utils/AppError.js'
 const canModifyStatus = (status) => ['PENDING'].includes(status)
 
 const resolveEmployeeId = async (user) => {
-  if (user.role === 'ADMIN') {
+  if (user.role !== 'EMPLOYEE') {
     return null
   }
 
   const employee = await Employee.findOne({ user: user._id }).select('_id')
-
-  if (!employee) {
-    throw new AppError('No employee profile linked to this account', 403)
-  }
-
-  return employee._id
+  return employee ? employee._id : null
 }
 
 export const listPendingApprovals = async (user) => {
   const employeeId = await resolveEmployeeId(user)
+
+  // An EMPLOYEE without a linked profile must not see everyone else's pending requests.
+  if (user.role === 'EMPLOYEE' && !employeeId) {
+    return []
+  }
+
   const query = employeeId ? { employee: employeeId, status: 'PENDING' } : { status: 'PENDING' }
 
   return VisitRequest.find(query)
@@ -31,6 +32,12 @@ export const listPendingApprovals = async (user) => {
 
 export const listApprovalHistory = async (user) => {
   const employeeId = await resolveEmployeeId(user)
+
+  // An EMPLOYEE without a linked profile has no approval history of their own.
+  if (user.role === 'EMPLOYEE' && !employeeId) {
+    return []
+  }
+
   const query = employeeId
     ? { employee: employeeId, status: { $in: ['APPROVED', 'REJECTED'] } }
     : { status: { $in: ['APPROVED', 'REJECTED'] } }

@@ -1,7 +1,17 @@
+import { ActivityLog } from '../../models/ActivityLog.js'
 import { AppError } from '../../utils/AppError.js'
 import { Employee } from '../../models/Employee.js'
 import { VisitRequest } from '../../models/VisitRequest.js'
 import { Visitor } from '../../models/Visitor.js'
+
+const resolveEmployeeId = async (user) => {
+  if (user.role === 'ADMIN') {
+    return null
+  }
+
+  const employee = await Employee.findOne({ user: user._id }).select('_id')
+  return employee ? employee._id : null
+}
 
 const normalizeDate = (value) => {
   const date = new Date(value)
@@ -13,7 +23,15 @@ const normalizeDate = (value) => {
 
 const normalizeTime = (value) => value?.trim()
 
-export const createVisitorRequest = async ({ visitor, employee, purpose, visitDate, expectedArrivalTime, createdBy, remarks = '' }) => {
+export const createVisitorRequest = async ({
+  visitor,
+  employee,
+  purpose,
+  visitDate,
+  expectedArrivalTime,
+  createdBy,
+  remarks = '',
+}) => {
   const employeeDoc = await Employee.findById(employee)
   if (!employeeDoc || !employeeDoc.isActive) {
     throw new AppError('Selected employee is not available', 400)
@@ -93,29 +111,65 @@ export const createVisitorRequest = async ({ visitor, employee, purpose, visitDa
     remarks,
   })
 
+  await ActivityLog.create({
+    action: 'Visitor Registered',
+    performedBy: createdBy,
+    visitRequest: request._id,
+    remarks: remarks || 'Registered',
+  })
+
   return request.populate(['visitor', 'employee'])
 }
 
-export const listVisitorRequests = async ({ search, status, user }) => {
-  const query = {}
+export const listVisitorRequests = async ({ search, status, date, user }) => {
+  const pipeline = []
 
   if (user.role === 'EMPLOYEE') {
-    query.employee = user._id
+    const employeeId = await resolveEmployeeId(user)
+    if (!employeeId) {
+      return []
+    }
+    pipeline.push({ $match: { employee: employeeId } })
+  }
+
+  const match = {}
+
+  if (status) {
+    match.status = status
+  }
+
+  if (date) {
+    // Parse the date string as a LOCAL day (YYYY-MM-DD) to avoid the UTC-shift
+    // that would otherwise cause the filter to miss records stored as local Dates.
+    const start = new Date(`${date}T00:00:00.000`)
+    const end = new Date(`${date}T23:59:59.999`)
+    match.visitDate = { $gte: start, $lte: end }
   }
 
   if (search) {
-    const regex = new RegExp(search, 'i')
-    query.$or = [{ 'visitor.name': regex }, { 'employee.name': regex }, { status: regex }]
+    const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+    match.$or = [
+      { 'visitor.name': regex },
+      { 'visitor.company': regex },
+      { 'visitor.phone': regex },
+      { 'employee.name': regex },
+    ]
   }
 
-  if (status) {
-    query.status = status
+  pipeline.push(
+    { $lookup: { from: 'visitors', localField: 'visitor', foreignField: '_id', as: 'visitor' } },
+    { $unwind: { path: '$visitor', preserveNullAndEmptyArrays: true } },
+    { $lookup: { from: 'employees', localField: 'employee', foreignField: '_id', as: 'employee' } },
+    { $unwind: { path: '$employee', preserveNullAndEmptyArrays: true } },
+  )
+
+  if (Object.keys(match).length > 0) {
+    pipeline.push({ $match: match })
   }
 
-  return VisitRequest.find(query)
-    .populate('visitor')
-    .populate('employee')
-    .sort({ visitDate: 1, expectedArrivalTime: 1 })
+  pipeline.push({ $sort: { visitDate: 1, expectedArrivalTime: 1 } })
+
+  return VisitRequest.aggregate(pipeline)
 }
 
 export const getVisitorRequestById = async (id) => {
@@ -141,10 +195,10 @@ export const updateVisitorRequest = async (id, payload, user) => {
   }
 
   const updateData = {}
-  if (payload.employee) updateData.employee = payload.employee
-  if (payload.purpose) updateData.purpose = payload.purpose
-  if (payload.visitDate) updateData.visitDate = normalizeDate(payload.visitDate)
-  if (payload.expectedArrivalTime) updateData.expectedArrivalTime = normalizeTime(payload.expectedArrivalTime)
+  if (payload.employee !== undefined) updateData.employee = payload.employee
+  if (payload.purpose !== undefined) updateData.purpose = payload.purpose
+  if (payload.visitDate !== undefined) updateData.visitDate = normalizeDate(payload.visitDate)
+  if (payload.expectedArrivalTime !== undefined) updateData.expectedArrivalTime = normalizeTime(payload.expectedArrivalTime)
   if (payload.remarks !== undefined) updateData.remarks = payload.remarks
 
   await VisitRequest.findByIdAndUpdate(id, updateData, { new: true })
@@ -163,5 +217,13 @@ export const cancelVisitorRequest = async (id, user) => {
 
   request.status = 'CANCELLED'
   await request.save()
+
+  await ActivityLog.create({
+    action: 'Visitor Cancelled',
+    performedBy: user._id,
+    visitRequest: request._id,
+    remarks: 'Cancelled',
+  })
+
   return request.populate(['visitor', 'employee'])
 }

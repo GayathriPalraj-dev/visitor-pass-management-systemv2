@@ -21,6 +21,7 @@ export const listVisitors = asyncHandler(async (req, res) => {
   const visitors = await listVisitorRequests({
     search: req.query.search,
     status: req.query.status,
+    date: req.query.date,
     user: req.user,
   })
 

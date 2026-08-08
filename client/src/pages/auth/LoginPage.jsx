@@ -32,8 +32,9 @@ export const LoginPage = () => {
       toast.success('Welcome back')
       history.replace('/dashboard')
     },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Login failed')
+onError: (error) => {
+      const data = error.response?.data
+      toast.error(data?.errors?.[0]?.message || data?.message || 'Login failed')
     },
   })
 

@@ -8,16 +8,19 @@ export const ReceptionistPage = () => {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
+  const [date, setDate] = useState('')
 
   const { data = [], isLoading, isError, error } = useQuery({
-    queryKey: ['receptionist-visitors', search, status],
-    queryFn: () => visitorService.list({ search, status }),
+    queryKey: ['receptionist-visitors', search, status, date],
+    queryFn: () => visitorService.list({ search, status, date }),
   })
 
   const checkInMutation = useMutation({
     mutationFn: (id) => checkinService.checkIn(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['receptionist-visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-statistics'] })
       toast.success('Visitor checked in')
     },
     onError: (err) => {
@@ -29,6 +32,8 @@ export const ReceptionistPage = () => {
     mutationFn: (id) => checkinService.checkOut(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['receptionist-visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-statistics'] })
       toast.success('Visitor checked out')
     },
     onError: (err) => {
@@ -50,7 +55,7 @@ export const ReceptionistPage = () => {
       <section className="card panel">
         <div className="filters">
           <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search visitor, company or employee" />
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+<select value={status} onChange={(event) => setStatus(event.target.value)}>
             <option value="">All statuses</option>
             <option value="PENDING">PENDING</option>
             <option value="APPROVED">APPROVED</option>
@@ -59,6 +64,7 @@ export const ReceptionistPage = () => {
             <option value="REJECTED">REJECTED</option>
             <option value="CANCELLED">CANCELLED</option>
           </select>
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} title="Filter by visit date" />
         </div>
 
         {isLoading && <div className="state-card">Loading visits...</div>}

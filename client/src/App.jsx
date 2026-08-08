@@ -6,6 +6,8 @@ import { DashboardPage } from './pages/dashboard/DashboardPage.jsx'
 import { VisitorsPage } from './pages/visitors/VisitorsPage.jsx'
 import { EmployeeApprovalsPage } from './pages/approvals/EmployeeApprovalsPage.jsx'
 import { ReceptionistPage } from './pages/receptionist/ReceptionistPage.jsx'
+import { ActivityPage } from './pages/activity/ActivityPage.jsx'
+import { ReportsPage } from './pages/reports/ReportsPage.jsx'
 
 function App() {
   return (
@@ -24,6 +26,12 @@ function App() {
       </ProtectedRoute>
       <ProtectedRoute path="/receptionist">
         <ReceptionistPage />
+      </ProtectedRoute>
+      <ProtectedRoute path="/activity">
+        <ActivityPage />
+      </ProtectedRoute>
+      <ProtectedRoute path="/reports">
+        <ReportsPage />
       </ProtectedRoute>
       <Redirect to="/dashboard" />
     </Switch>

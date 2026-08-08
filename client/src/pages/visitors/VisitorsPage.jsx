@@ -18,20 +18,23 @@ export const VisitorsPage = () => {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
+  const [date, setDate] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [detailsVisitor, setDetailsVisitor] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
   const [editingVisitor, setEditingVisitor] = useState(null)
 
   const { data = [], isLoading, isError, error } = useQuery({
-    queryKey: ['visitors', search, status],
-    queryFn: () => visitorService.list({ search, status }),
+    queryKey: ['visitors', search, status, date],
+    queryFn: () => visitorService.list({ search, status, date }),
   })
 
   const createMutation = useMutation({
     mutationFn: (payload) => visitorService.create(payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-statistics'] })
+      await queryClient.invalidateQueries({ queryKey: ['receptionist-visitors'] })
       toast.success('Visitor registered successfully')
       setIsFormOpen(false)
       setEditingVisitor(null)
@@ -58,6 +61,8 @@ export const VisitorsPage = () => {
     mutationFn: (id) => visitorService.cancel(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-statistics'] })
+      await queryClient.invalidateQueries({ queryKey: ['receptionist-visitors'] })
       toast.success('Visitor cancelled successfully')
       setCancelTarget(null)
     },
@@ -88,7 +93,7 @@ export const VisitorsPage = () => {
 
       <section className="card panel">
         <div className="filters">
-          <input
+<input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search visitor, employee or status"
@@ -102,6 +107,7 @@ export const VisitorsPage = () => {
             <option value="CHECKED_OUT">CHECKED_OUT</option>
             <option value="CANCELLED">CANCELLED</option>
           </select>
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} title="Filter by visit date" />
         </div>
 
         {isLoading && <div className="state-card">Loading visitors...</div>}

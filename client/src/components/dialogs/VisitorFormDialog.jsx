@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useQuery } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { employeeService } from '../../services/employeeService.js'
 
 const schema = z.object({
   visitorName: z.string().min(1, 'Visitor name is required'),
@@ -16,42 +18,46 @@ const schema = z.object({
   remarks: z.string().optional(),
 })
 
-const employees = [
-  { _id: '6853f4a1f5e55d7cb56b1001', name: 'Asha Rao', department: 'HR', designation: 'Manager' },
-  { _id: '6853f4a1f5e55d7cb56b1002', name: 'Ravi Kumar', department: 'IT', designation: 'Engineer' },
-]
+const emptyValues = {
+  visitorName: '',
+  phone: '',
+  email: '',
+  company: '',
+  idProofNumber: '',
+  employee: '',
+  purpose: '',
+  visitDate: '',
+  expectedArrivalTime: '',
+  remarks: '',
+}
+
+// Formats a Date (or date string) into the YYYY-MM-DD format expected by <input type="date">,
+// using local time so the displayed day never shifts due to UTC conversion.
+const formatDateForInput = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 export const VisitorFormDialog = ({ open, onClose, initialValues, onSubmit, isSubmitting }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {
-      visitorName: '',
-      phone: '',
-      email: '',
-      company: '',
-      idProofNumber: '',
-      employee: '',
-      purpose: '',
-      visitDate: '',
-      expectedArrivalTime: '',
-      remarks: '',
-    },
+    defaultValues: emptyValues,
+  })
+
+  const { data: employees = [], isLoading: isLoadingEmployees } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => employeeService.list(),
+    enabled: open,
   })
 
   useEffect(() => {
     if (!initialValues) {
-      reset({
-        visitorName: '',
-        phone: '',
-        email: '',
-        company: '',
-        idProofNumber: '',
-        employee: '',
-        purpose: '',
-        visitDate: '',
-        expectedArrivalTime: '',
-        remarks: '',
-      })
+      reset(emptyValues)
       return
     }
 
@@ -63,7 +69,7 @@ export const VisitorFormDialog = ({ open, onClose, initialValues, onSubmit, isSu
       idProofNumber: initialValues.visitor?.idProofNumber || '',
       employee: initialValues.employee?._id || '',
       purpose: initialValues.purpose || '',
-      visitDate: initialValues.visitDate ? new Date(initialValues.visitDate).toISOString().split('T')[0] : '',
+      visitDate: formatDateForInput(initialValues.visitDate),
       expectedArrivalTime: initialValues.expectedArrivalTime || '',
       remarks: initialValues.remarks || '',
     })
@@ -119,8 +125,10 @@ export const VisitorFormDialog = ({ open, onClose, initialValues, onSubmit, isSu
             </label>
             <label>
               Employee
-              <select {...register('employee')}>
-                <option value="">Select employee</option>
+              <select {...register('employee')} disabled={isLoadingEmployees}>
+                <option value="">
+                  {isLoadingEmployees ? 'Loading employees...' : 'Select employee'}
+                </option>
                 {employees.map((employee) => (
                   <option value={employee._id} key={employee._id}>
                     {employee.name} — {employee.department}

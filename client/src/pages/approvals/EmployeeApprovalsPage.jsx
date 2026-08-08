@@ -20,12 +20,14 @@ export const EmployeeApprovalsPage = () => {
     mutationFn: ({ id, remarksValue }) => approvalService.approve(id, remarksValue),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['approvals'] })
+      await queryClient.invalidateQueries({ queryKey: ['visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-statistics'] })
       toast.success('Request approved')
       setSelected(null)
       setRemarks('')
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Approval failed')
+      toast.error(err.response?.data?.errors?.[0]?.message || err.response?.data?.message || 'Approval failed')
     },
   })
 
@@ -33,12 +35,14 @@ export const EmployeeApprovalsPage = () => {
     mutationFn: ({ id, remarksValue }) => approvalService.reject(id, remarksValue),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['approvals'] })
+      await queryClient.invalidateQueries({ queryKey: ['visitors'] })
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-statistics'] })
       toast.success('Request rejected')
       setSelected(null)
       setRemarks('')
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Rejection failed')
+      toast.error(err.response?.data?.errors?.[0]?.message || err.response?.data?.message || 'Rejection failed')
     },
   })
 

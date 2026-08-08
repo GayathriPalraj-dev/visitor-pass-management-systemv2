@@ -42,6 +42,7 @@ export const validateVisitorId = [param('id').isMongoId().withMessage('Invalid v
 export const validateListVisitors = [
   query('search').optional().trim().escape(),
   query('status').optional().isIn(['PENDING', 'APPROVED', 'REJECTED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']).withMessage('Invalid status'),
+  query('date').optional().isISO8601().withMessage('Invalid date'),
 ]
 
 export const handleValidation = (req, res, next) => {
