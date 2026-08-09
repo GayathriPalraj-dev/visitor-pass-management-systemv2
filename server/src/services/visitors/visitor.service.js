@@ -37,6 +37,10 @@ export const createVisitorRequest = async ({
     throw new AppError('Selected employee is not available', 400)
   }
 
+  if (!employeeDoc.user) {
+    throw new AppError('Selected employee does not have an approval account', 400)
+  }
+
   const pendingCount = await VisitRequest.countDocuments({ employee, status: 'PENDING' })
   if (pendingCount >= 3) {
     throw new AppError('Employee already has three pending requests', 400)
@@ -195,7 +199,18 @@ export const updateVisitorRequest = async (id, payload, user) => {
   }
 
   const updateData = {}
-  if (payload.employee !== undefined) updateData.employee = payload.employee
+  if (payload.employee !== undefined) {
+    const employeeDoc = await Employee.findById(payload.employee)
+    if (!employeeDoc || !employeeDoc.isActive) {
+      throw new AppError('Selected employee is not available', 400)
+    }
+
+    if (!employeeDoc.user) {
+      throw new AppError('Selected employee does not have an approval account', 400)
+    }
+
+    updateData.employee = payload.employee
+  }
   if (payload.purpose !== undefined) updateData.purpose = payload.purpose
   if (payload.visitDate !== undefined) updateData.visitDate = normalizeDate(payload.visitDate)
   if (payload.expectedArrivalTime !== undefined) updateData.expectedArrivalTime = normalizeTime(payload.expectedArrivalTime)
