@@ -2,7 +2,10 @@ import { api } from '../api/axios.js'
 
 export const visitorService = {
   async list(params = {}) {
-    const response = await api.get('/visitors', { params })
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== '' && value != null)
+    )
+    const response = await api.get('/visitors', { params: cleanParams })
     return response.data.data
   },
 

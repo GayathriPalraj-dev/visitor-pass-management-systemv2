@@ -8,19 +8,19 @@ const users = [
   {
     name: 'Admin User',
     email: 'admin@example.com',
-    password: 'Admin@123',
+    password: process.env.SEED_ADMIN_PASSWORD,
     role: 'ADMIN',
   },
   {
     name: 'Reception User',
     email: 'reception@example.com',
-    password: 'Reception@123',
+    password: process.env.SEED_RECEPTION_PASSWORD,
     role: 'RECEPTIONIST',
   },
   {
     name: 'Employee User',
     email: 'employee@example.com',
-    password: 'Employee@123',
+    password: process.env.SEED_EMPLOYEE_PASSWORD,
     role: 'EMPLOYEE',
   },
 ]
@@ -48,6 +48,12 @@ const employees = [
 
 const seedUsers = async () => {
   try {
+    const missingSeedPasswords = users.filter((user) => !user.password).map((user) => user.role)
+
+    if (missingSeedPasswords.length > 0) {
+      throw new Error(`Missing seed passwords for roles: ${missingSeedPasswords.join(', ')}`)
+    }
+
     await connectDb()
     await User.deleteMany({})
     await Employee.deleteMany({})
@@ -64,7 +70,7 @@ const seedUsers = async () => {
     await Employee.create(employeeList)
 
     console.log('Seed users created:')
-    users.forEach((user) => console.log(`${user.role}: ${user.email} / ${user.password}`))
+    users.forEach((user) => console.log(`${user.role}: ${user.email}`))
     console.log('Seed employees created:')
     employees.forEach((employee) => console.log(`${employee.employeeId}: ${employee.name}`))
   } catch (error) {
