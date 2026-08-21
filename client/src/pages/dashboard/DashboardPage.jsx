@@ -39,6 +39,7 @@ export const DashboardPage = () => {
   const { data = {}, isLoading, isError, error } = useQuery({
     queryKey: ['dashboard-statistics', user?.role],
     queryFn: () => dashboardService.getStatistics(),
+    staleTime: 30_000,
   })
 
   const statsDef =
@@ -106,3 +107,4 @@ export const DashboardPage = () => {
     </main>
   )
 }
+

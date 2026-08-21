@@ -16,3 +16,29 @@ api.interceptors.request.use((config) => {
 
   return config
 })
+
+const getHealthUrl = () => {
+  const baseURL = api.defaults.baseURL
+
+  if (baseURL?.startsWith('http')) {
+    return new URL('/health', baseURL).toString()
+  }
+
+  return '/health'
+}
+
+export const prewarmApi = async () => {
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), 8000)
+
+  try {
+    await fetch(getHealthUrl(), {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+  } catch {
+    // The login request still shows the real API error if warm-up fails.
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
